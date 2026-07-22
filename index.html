@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#082c2d" />
+  <title>Football English | Interactive Trial Lesson</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <button class="brand" id="homeBtn" aria-label="Restart lesson">
+        <span class="brand-mark">51</span><span id="brandName">Talk Academy</span>
+      </button>
+      <div class="lesson-meta">
+        <span class="eyebrow" id="stageLabel">Kick-off</span>
+        <strong id="lessonTitle">Football English</strong>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="soundBtn" aria-label="Toggle sound" title="Sound">♪</button>
+        <button class="icon-btn" id="teacherBtn" aria-label="Teacher notes" title="Teacher notes">i</button>
+        <button class="icon-btn" id="fullBtn" aria-label="Full screen" title="Full screen">⛶</button>
+      </div>
+    </header>
+
+    <main id="lesson" class="lesson" aria-live="polite"></main>
+
+    <footer class="player-controls">
+      <button id="prevBtn" class="nav-btn secondary" aria-label="Previous scene">←</button>
+      <div class="progress-wrap" aria-label="Lesson progress">
+        <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        <span id="progressText">1 / 22</span>
+      </div>
+      <button id="nextBtn" class="nav-btn primary">Next <span>→</span></button>
+    </footer>
+  </div>
+
+  <dialog id="teacherPanel" class="teacher-panel">
+    <form method="dialog" class="teacher-card">
+      <div class="panel-head"><div><span class="eyebrow">Teacher mode</span><h2 id="teacherTitle">Kick-off</h2></div><button class="icon-btn" value="close" aria-label="Close">×</button></div>
+      <div id="teacherCopy" class="teacher-copy"></div>
+      <div class="teacher-tools">
+        <button type="button" id="revealBtn" class="tool-btn">Reveal / reset</button>
+        <button type="button" id="restartBtn" class="tool-btn">Restart lesson</button>
+      </div>
+      <p class="shortcut-note">Keyboard: ← → navigate · R reveal/reset · T teacher notes</p>
+    </form>
+  </dialog>
+
+  <script src="course.config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
