@@ -53,18 +53,9 @@ const scenes=[
  {stage:'CEFR reference',title:'CEFR levels and key abilities',render:()=>`<section class="scene center cefr-scene"><img class="cefr-original" src="assets/cefr-original.jpg" alt="Original CEFR levels and key abilities chart"></section>`}
 ];
 
-let index=Math.max(0,Math.min(scenes.length-1,(Number(qs.get('scene'))||1)-1)),soundOn=cfg.soundOn!==false,selectedQuestion=null,currentAudio=null,currentAudioContext=null,currentSourceNode=null,challengeSubject='',challengeAction='';
+let index=Math.max(0,Math.min(scenes.length-1,(Number(qs.get('scene'))||1)-1)),soundOn=cfg.soundOn!==false,selectedQuestion=null,currentAudio=null,challengeSubject='',challengeAction='';
 const lesson=document.getElementById('lesson'),progressBar=document.getElementById('progressBar'),progressText=document.getElementById('progressText');
 function render(){const s=scenes[index],html=s.render();if(typeof html!=='string'||!html.includes('<section')||html.includes('[object Object]'))throw new Error(`Invalid scene ${index+1}`);lesson.innerHTML=html;document.getElementById('stageLabel').textContent=s.stage;document.getElementById('teacherTitle').textContent=s.title;document.getElementById('teacherCopy').textContent=(hints[cfg.teacherHintLanguage]||hints.en)[index];progressBar.style.width=`${((index+1)/scenes.length)*100}%`;progressText.textContent=`${index+1} / ${scenes.length}`;document.getElementById('prevBtn').disabled=index===0;document.getElementById('nextBtn').innerHTML=index===scenes.length-1?'Restart ↻':'Next <span>→</span>';bindScene()}
-function speakFallback(src){
- const word=decodeURIComponent(src.split('/').pop().split('?')[0]).replace('.mp3','').replaceAll('-',' ');
- if(!('speechSynthesis' in window))return;
- speechSynthesis.cancel();
- const utterance=new SpeechSynthesisUtterance(word);
- utterance.lang='en-US';
- utterance.rate=.78;
- speechSynthesis.speak(utterance);
-}
 function playAudio(src,button){
  if(!soundOn){soundOn=true;document.getElementById('soundBtn').textContent='♪'}
  if(currentAudio){currentAudio.pause();currentAudio.currentTime=0}
@@ -72,19 +63,11 @@ function playAudio(src,button){
  currentAudio.preload='auto';
  currentAudio.volume=1;
  currentAudio.muted=false;
- try{
-  currentAudioContext=currentAudioContext||new (window.AudioContext||window.webkitAudioContext)();
-  if(currentAudioContext.state==='suspended')currentAudioContext.resume();
-  currentSourceNode=currentAudioContext.createMediaElementSource(currentAudio);
-  const gain=currentAudioContext.createGain();
-  gain.gain.value=3.2;
-  currentSourceNode.connect(gain).connect(currentAudioContext.destination);
- }catch(error){}
  if(button)button.classList.add('is-playing');
  const finish=()=>button?.classList.remove('is-playing');
  currentAudio.onended=finish;
- currentAudio.onerror=()=>{finish();speakFallback(src)};
- currentAudio.play().catch(()=>{finish();speakFallback(src)});
+ currentAudio.onerror=finish;
+ currentAudio.play().catch(finish);
 }
 function bindScene(){selectedQuestion=null;challengeSubject='';challengeAction='';document.querySelectorAll('[data-audio]').forEach(b=>b.onclick=()=>playAudio(b.dataset.audio,b));document.querySelectorAll('.talk-line').forEach(b=>b.onclick=()=>b.classList.toggle('selected'));document.querySelectorAll('.fill-card').forEach(b=>b.onclick=()=>{selectedQuestion=b;document.querySelectorAll('.fill-card').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('[data-fill]').forEach(x=>x.classList.remove('selected'));document.getElementById('fillFeedback').textContent='Now choose the word that completes this question.'});document.querySelectorAll('[data-fill]').forEach(b=>b.onclick=()=>{const feedback=document.getElementById('fillFeedback');if(!selectedQuestion){feedback.textContent='Tap a question first, then choose a word.';return}document.querySelectorAll('[data-fill]').forEach(x=>x.classList.toggle('selected',x===b));const ok=b.dataset.fill===selectedQuestion.dataset.answer;selectedQuestion.classList.toggle('correct',ok);selectedQuestion.classList.toggle('wrong',!ok);selectedQuestion.querySelector('span').textContent=ok?`Correct — ${b.dataset.fill}`:`Try again — ${b.dataset.fill} does not fit.`;feedback.textContent=ok?'Correct! Choose another question.':'Try another word for this question.';if(ok){playAudio(audioPath(b.dataset.fill.replace('football ','').replace('football player','player')));selectedQuestion.classList.remove('active');selectedQuestion=null}});const updateChallenge=()=>{const sentence=document.getElementById('challengeSentence'),feedback=document.getElementById('challengeFeedback'),success=document.getElementById('challengeSuccess');if(!sentence)return;sentence.textContent=`The ${challengeSubject||'______'} ${challengeAction||'______'}.`;if(!challengeSubject||!challengeAction){feedback.textContent='Choose one answer in each step.';return}const ok=challengeSubject==='striker'&&challengeAction==='scores a goal';sentence.classList.toggle('success',ok);feedback.textContent=ok?'Great! Now say the sentence out loud.':'Look again: the player in coral puts the ball into the net.';success.textContent=ok?'✓ READY TO COMMENTATE':''};document.querySelectorAll('[data-challenge-subject]').forEach(b=>b.onclick=()=>{challengeSubject=b.dataset.challengeSubject;document.querySelectorAll('[data-challenge-subject]').forEach(x=>x.classList.toggle('selected',x===b));updateChallenge()});document.querySelectorAll('[data-challenge-action]').forEach(b=>b.onclick=()=>{challengeAction=b.dataset.challengeAction;document.querySelectorAll('[data-challenge-action]').forEach(x=>x.classList.toggle('selected',x===b));updateChallenge()});const help=document.getElementById('challengeHelp');if(help)help.onclick=()=>{challengeSubject='striker';challengeAction='scores a goal';document.querySelectorAll('[data-challenge-subject]').forEach(x=>x.classList.toggle('selected',x.dataset.challengeSubject==='striker'));document.querySelectorAll('[data-challenge-action]').forEach(x=>x.classList.toggle('selected',x.dataset.challengeAction==='scores a goal'));updateChallenge()}}
 function go(n){index=(n+scenes.length)%scenes.length;render()}
