@@ -53,7 +53,7 @@ const scenes=[
  {stage:'CEFR reference',title:'CEFR levels and key abilities',render:()=>`<section class="scene center cefr-scene"><img class="cefr-original" src="assets/cefr-original.jpg" alt="Original CEFR levels and key abilities chart"></section>`}
 ];
 
-let index=Math.max(0,Math.min(scenes.length-1,(Number(qs.get('scene'))||1)-1)),soundOn=cfg.soundOn!==false,selectedQuestion=null,currentAudio=null,challengeSubject='',challengeAction='';
+let index=Math.max(0,Math.min(scenes.length-1,(Number(qs.get('scene'))||1)-1)),soundOn=cfg.soundOn!==false,selectedQuestion=null,currentAudio=null,currentAudioContext=null,currentSourceNode=null,challengeSubject='',challengeAction='';
 const lesson=document.getElementById('lesson'),progressBar=document.getElementById('progressBar'),progressText=document.getElementById('progressText');
 function render(){const s=scenes[index],html=s.render();if(typeof html!=='string'||!html.includes('<section')||html.includes('[object Object]'))throw new Error(`Invalid scene ${index+1}`);lesson.innerHTML=html;document.getElementById('stageLabel').textContent=s.stage;document.getElementById('teacherTitle').textContent=s.title;document.getElementById('teacherCopy').textContent=(hints[cfg.teacherHintLanguage]||hints.en)[index];progressBar.style.width=`${((index+1)/scenes.length)*100}%`;progressText.textContent=`${index+1} / ${scenes.length}`;document.getElementById('prevBtn').disabled=index===0;document.getElementById('nextBtn').innerHTML=index===scenes.length-1?'Restart ↻':'Next <span>→</span>';bindScene()}
 function speakFallback(src){
@@ -72,6 +72,14 @@ function playAudio(src,button){
  currentAudio.preload='auto';
  currentAudio.volume=1;
  currentAudio.muted=false;
+ try{
+  currentAudioContext=currentAudioContext||new (window.AudioContext||window.webkitAudioContext)();
+  if(currentAudioContext.state==='suspended')currentAudioContext.resume();
+  currentSourceNode=currentAudioContext.createMediaElementSource(currentAudio);
+  const gain=currentAudioContext.createGain();
+  gain.gain.value=3.2;
+  currentSourceNode.connect(gain).connect(currentAudioContext.destination);
+ }catch(error){}
  if(button)button.classList.add('is-playing');
  const finish=()=>button?.classList.remove('is-playing');
  currentAudio.onended=finish;
