@@ -36,7 +36,10 @@ const questions=[
 const hints={en:Array(22).fill('Keep the learner speaking. Ask for a complete sentence before moving on.'),ar:Array(22).fill('شجّع المتعلم على التحدث بجملة كاملة قبل الانتقال إلى الصفحة التالية.')};
 
 function art(src,alt='Generated international football scene'){return `<div class="art-frame"><img src="${src}" alt="${alt}"></div>`}
-function audioPath(word){return `assets/audio/${word.replaceAll(' ','-')}.mp3?v=2.3.1`}
+function audioPath(word){
+ const slug=word.replaceAll(' ','-');
+ return window.FOOTBALL_AUDIO?.[slug]||`assets/audio/${slug}.mp3?v=2.3.5`;
+}
 function vocabScene(v,i){return {stage:`Vocabulary ${i+1} of 11`,title:`Teach: ${v.word}`,render:()=>`<section class="scene vocab-scene"><article class="role-card" data-number="${i+1}"><span class="kicker">${v.tag}</span><div class="word">${v.short||v.word} <small>${v.pos}</small></div><div class="phonetic">${v.ipa}</div><p class="definition">${v.example}</p>${v.forms.length?`<div class="form-stack">${v.forms.map(x=>`<span class="morph">${x}</span>`).join('')}</div>`:''}<button class="speak-word" data-audio="${audioPath(v.word)}">♪ Hear ${v.word}</button></article>${art(v.image,`${v.word} in an international football match`)}</section>`}}
 function fillScene(start,end){const set=questions.slice(start,end);return {stage:'Practice',title:`Fill the blanks ${start+1}-${end}`,render:()=>`<section class="scene center practice-scene"><div><span class="kicker">1. Choose a question · 2. Choose a word</span><h2>Fill the blanks</h2><div class="fill-grid">${set.map((q,j)=>`<button class="fill-card" data-answer="${q[1]}"><b>${start+j+1}.</b> ${q[0]}<span>Tap this question first</span></button>`).join('')}</div><div class="word-bank compact-bank">${['football player','goalkeeper','defender','midfielder','striker','free kick','offside','sent off','winger','playmaker','penalty'].map(w=>`<button class="word-chip" data-fill="${w}">${w}</button>`).join('')}</div><div class="feedback" id="fillFeedback">First, tap the question you want to answer.</div></div></section>`}}
 
